@@ -123,7 +123,10 @@ def extract(pdf_filename, filename_prefix, save_tsv=False):
         text = text.split('\n')
         text = ["".join(filter(lambda x: x in PRINTABLE, l)) for l in text][SKIP_LINES:]
 
-    RAW_FILENAME = f"{filename_prefix}-raw_lines.txt"
+    # Get the directory where the script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    RAW_FILENAME = os.path.join(script_dir, f"{filename_prefix}-raw_lines.txt")
 
     logging.info(f"There are {len(text)} lines of text in the PDF, saving to {RAW_FILENAME}")
 
@@ -188,19 +191,6 @@ def extract(pdf_filename, filename_prefix, save_tsv=False):
     if save_tsv:
         logging.info("Saving Course Records")
 
-        try:
-            with open(f'{filename_prefix}-records.tsv', 'w', newline='', encoding='utf-8') as tsv_file:
-                writer = csv.writer(tsv_file, delimiter='\t', lineterminator='\n')
-                writer.writerow(["course_code","course_name","prerequisite","unit"])
-                for k, v in course_dict.items():
-                    temp_prerequisite = v['prerequisite'].strip() if v['prerequisite'] else "N/A"
-                    if "None" in temp_prerequisite or "None Course" in temp_prerequisite:
-                        temp_prerequisite = "N/A"
-                    writer.writerow([v['course_code'], v['course_name'], temp_prerequisite, v['unit']])
-        except IOError as e:
-            logging.error(f"Error writing records TSV file: {e}")
-            raise
-
         code_desc_dict = dict()
         for k, v in course_dict.items():
             code_desc_dict[k] = v['description']
@@ -210,16 +200,19 @@ def extract(pdf_filename, filename_prefix, save_tsv=False):
             temp = ''.join(''.join(tv).split(":")[1:]).strip()
             code_desc_dict[k] = temp
 
-        logging.info("Saving Course Descriptions")
-
         try:
-            with open(f'{filename_prefix}-description.tsv', 'w', newline='', encoding='utf-8') as tsv_file:
+            tsv_filename = os.path.join(script_dir, f'{filename_prefix}.tsv')
+            with open(tsv_filename, 'w', newline='', encoding='utf-8') as tsv_file:
                 writer = csv.writer(tsv_file, delimiter='\t', lineterminator='\n')
-                writer.writerow(["course_code","course_description"])
-                for k, v in code_desc_dict.items():
-                    writer.writerow([k, v])
+                writer.writerow(["course_code","course_name","prerequisite","unit","course_description"])
+                for k, v in course_dict.items():
+                    temp_prerequisite = v['prerequisite'].strip() if v['prerequisite'] else "N/A"
+                    if "None" in temp_prerequisite or "None Course" in temp_prerequisite:
+                        temp_prerequisite = "N/A"
+                    course_description = code_desc_dict.get(k, "")
+                    writer.writerow([v['course_code'], v['course_name'], temp_prerequisite, v['unit'], course_description])
         except IOError as e:
-            logging.error(f"Error writing description TSV file: {e}")
+            logging.error(f"Error writing TSV file: {e}")
             raise
 
         logging.info("Done, Exiting")

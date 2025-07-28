@@ -1,0 +1,28 @@
+*.pdf
+*.tsv
+*.csv
+*.xls
+*.xlsx
+*.json
+*.txt
+
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+# Thumbnails
+._*
+.Spotlight-V100
+.Trashes
+# Icon must end with two \r
+Icon
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.pkl
+*.egg
+*.egg-info/
