@@ -1,6 +1,6 @@
 # BCSC - BNBU Course Script Collection
 
-A comprehensive collection of Python scripts for extracting, processing, and managing course data from various sources at Beijing Normal University - Hong Kong (BNBU).
+A comprehensive collection of Python scripts for extracting, processing, and managing course data from various sources at Beijing Normal Hong Kong Baptist University (BNBU).
 
 ## Overview
 
