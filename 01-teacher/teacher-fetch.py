@@ -3,6 +3,16 @@ import json
 import csv
 import pandas as pd
 from pathlib import Path
+from datetime import datetime
+
+def get_current_date():
+    """
+    Get current date in ISO format
+    
+    Returns:
+        str: Current date in ISO format (YYYY-MM-DD)
+    """
+    return datetime.now().strftime("%Y-%m-%d")
 
 def fetch_all_teachers():
     """
@@ -11,7 +21,7 @@ def fetch_all_teachers():
     Returns:
         list: List of teacher dictionaries
     """
-    base_url = "https://staff.uic.edu.cn/teacher/teacher/list?access-token=&page={}&pageSize=500&key=&lang=en"
+    base_url = "https://staff.bnbu.edu.cn/teacher/teacher/list?access-token=&page={}&pageSize=500&key=&lang=en"
     page = 0
     teachers = []
     
@@ -44,7 +54,7 @@ def fetch_all_teachers():
 
 def save_teachers_json(teachers, output_dir="output"):
     """
-    Save teacher data as JSON file
+    Save teacher data as JSON file with date in filename
     
     Args:
         teachers (list): List of teacher dictionaries
@@ -56,7 +66,8 @@ def save_teachers_json(teachers, output_dir="output"):
     output_path = Path(output_dir)
     output_path.mkdir(exist_ok=True)
     
-    json_file_path = output_path / "teachers.json"
+    date = get_current_date()
+    json_file_path = output_path / f"teachers-{date}.json"
     
     with open(json_file_path, 'w', encoding='utf-8') as f:
         json.dump(teachers, f, indent=2, ensure_ascii=False)
@@ -66,7 +77,7 @@ def save_teachers_json(teachers, output_dir="output"):
 
 def convert_teachers_to_csv(teachers, output_dir="output"):
     """
-    Convert teacher data to CSV with fields: name, description, url
+    Convert teacher data to CSV with fields: name, description, url and date in filename
     
     Args:
         teachers (list): List of teacher dictionaries
@@ -78,7 +89,8 @@ def convert_teachers_to_csv(teachers, output_dir="output"):
     output_path = Path(output_dir)
     output_path.mkdir(exist_ok=True)
     
-    csv_file_path = output_path / "teachers.csv"
+    date = get_current_date()
+    csv_file_path = output_path / f"teachers-{date}.csv"
     
     # Prepare data for CSV
     csv_data = []
