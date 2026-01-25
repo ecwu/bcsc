@@ -18,7 +18,7 @@ This toolkit provides automated solutions for:
 
 **You must obtain the required data yourself from official sources:**
 
-- Course description PDFs from [BNBU Academic Registry](https://ar.uic.edu.cn/info/1021/1430.htm)
+- Course description PDFs from [BNBU Academic Registry](https://ar.bnbu.edu.cn/info/1021/1430.htm)
 - Excel timetable files from official university sources
 - PDF handbook files from university filebase/academic systems
 - Any other required input files from authorized university channels

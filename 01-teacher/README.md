@@ -4,7 +4,7 @@ This module fetches teacher information from the BNBU official website.
 
 ## Overview
 
-The `teacher-fetch.py` script scrapes teacher information from the [BNBU staff directory](https://staff.uic.edu.cn/) and exports the data in both JSON and CSV formats.
+The `teacher-fetch.py` script scrapes teacher information from the [BNBU staff directory](https://staff.bnbu.edu.cn/) and exports the data in both JSON and CSV formats.
 
 ## Prerequisites
 

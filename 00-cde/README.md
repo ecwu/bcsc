@@ -39,7 +39,7 @@ python cd-extract.py <path_to_pdf> --export tsv --prefix <prefix>
 
 ## Input Requirements
 
-- PDF files from [BNBU Academic Registry](https://ar.uic.edu.cn/info/1021/1430.htm)
+- PDF files from [BNBU Academic Registry](https://ar.bnbu.edu.cn/info/1021/1430.htm)
 - PDF files should be placed in the `input/` directory
 
 ## Output Files
