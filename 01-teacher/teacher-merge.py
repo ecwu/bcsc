@@ -17,7 +17,7 @@ from typing import Dict, List, Optional
 
 def get_current_date() -> str:
     """Return current date in YYYY-MM-DD format."""
-    return datetime.now().strftime('%Y-%m-%d')
+    return datetime.now().strftime("%Y-%m-%d")
 
 
 def load_csv_data(filepath: Path) -> List[Dict[str, str]]:
@@ -31,7 +31,7 @@ def load_csv_data(filepath: Path) -> List[Dict[str, str]]:
         List of dictionaries representing CSV rows
     """
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             return list(reader)
     except FileNotFoundError:
@@ -43,8 +43,7 @@ def load_csv_data(filepath: Path) -> List[Dict[str, str]]:
 
 
 def merge_teacher_data(
-    latest_data: List[Dict[str, str]],
-    live_data: List[Dict[str, str]]
+    latest_data: List[Dict[str, str]], live_data: List[Dict[str, str]]
 ) -> List[Dict[str, str]]:
     """
     Merge latest API data with live data.
@@ -64,12 +63,9 @@ def merge_teacher_data(
     # Build index of latest data by uid
     latest_by_uid: Dict[str, Dict[str, str]] = {}
     for row in latest_data:
-        uid = row.get('uid', '').strip()
+        uid = row.get("uid", "").strip()
         if uid:
             latest_by_uid[uid] = row
-
-    # Track all uids from latest data
-    latest_uids = set(latest_by_uid.keys())
 
     # Process live data
     merged_with_uid = []
@@ -77,31 +73,45 @@ def merge_teacher_data(
     resigned_count = 0
     updated_count = 0
     unchanged_count = 0
+    new_count = 0
+
+    # Track which latest UIDs have already been processed via live data
+    seen_uids: set = set()
 
     for row in live_data:
-        uid = row.get('uid', '').strip()
+        uid = row.get("uid", "").strip()
 
         if not uid:
             # No uid - keep as-is and move to end
             merged_without_uid.append(row)
             continue
 
+        seen_uids.add(uid)
+
         if uid in latest_by_uid:
             # UID matches - override with latest data
             latest_row = latest_by_uid[uid]
             merged_row = row.copy()
-            merged_row['name'] = latest_row.get('name', '')
-            merged_row['description'] = latest_row.get('description', '')
-            merged_row['url'] = latest_row.get('url', '')
-            merged_row['incumbencyStatus'] = 'ACTIVE'
+            merged_row["name"] = latest_row.get("name", "")
+            merged_row["description"] = latest_row.get("description", "")
+            merged_row["url"] = latest_row.get("url", "")
+            merged_row["incumbencyStatus"] = "ACTIVE"
             merged_with_uid.append(merged_row)
             updated_count += 1
         else:
             # UID not in latest - teacher resigned
             merged_row = row.copy()
-            merged_row['incumbencyStatus'] = 'RESIGNED'
+            merged_row["incumbencyStatus"] = "RESIGNED"
             merged_with_uid.append(merged_row)
             resigned_count += 1
+
+    # Add new teachers from latest data not present in live data
+    for uid, row in latest_by_uid.items():
+        if uid not in seen_uids:
+            new_row = row.copy()
+            new_row["incumbencyStatus"] = "ACTIVE"
+            merged_with_uid.append(new_row)
+            new_count += 1
 
     # Count unchanged (no-uid rows)
     unchanged_count = len(merged_without_uid)
@@ -111,6 +121,7 @@ def merge_teacher_data(
 
     print(f"Merge summary:")
     print(f"  Updated (ACTIVE): {updated_count}")
+    print(f"  New teachers added: {new_count}")
     print(f"  Marked RESIGNED: {resigned_count}")
     print(f"  Unchanged (no uid): {unchanged_count}")
     print(f"  Total: {len(result)}")
@@ -118,10 +129,7 @@ def merge_teacher_data(
     return result
 
 
-def write_csv_data(
-    data: List[Dict[str, str]],
-    output_path: Path
-) -> None:
+def write_csv_data(data: List[Dict[str, str]], output_path: Path) -> None:
     """
     Write merged data to CSV file.
 
@@ -136,9 +144,9 @@ def write_csv_data(
             print("Warning: No data to write")
             return
 
-        fieldnames = ['name', 'uid', 'description', 'url', 'incumbencyStatus']
+        fieldnames = ["name", "uid", "description", "url", "incumbencyStatus"]
 
-        with open(output_path, 'w', encoding='utf-8', newline='') as f:
+        with open(output_path, "w", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(data)
@@ -152,29 +160,33 @@ def write_csv_data(
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description='Merge latest API teacher data with live system data'
+        description="Merge latest API teacher data with live system data"
     )
     parser.add_argument(
-        '--latest_csv',
+        "--latest_csv",
         required=True,
-        help='Path to latest CSV from API fetch (teachers-{date}.csv)'
+        help="Path to latest CSV from API fetch (teachers-{date}.csv)",
     )
     parser.add_argument(
-        '--live_date',
+        "--live_date",
         required=True,
-        help='Date string for live data file (format: YYYY-MM-DD)'
+        help="Date string for live data file (format: YYYY-MM-DD)",
     )
 
     args = parser.parse_args()
 
     # Paths
     latest_csv_path = Path(args.latest_csv)
-    live_csv_path = Path(__file__).parent / 'live-data' / f'lecturers_export_{args.live_date}.csv'
+    live_csv_path = (
+        Path(__file__).parent / "live-data" / f"lecturers_export_{args.live_date}.csv"
+    )
 
     # If file doesn't exist, try to find matching files (handles versioned files)
     if not live_csv_path.exists():
-        live_data_dir = Path(__file__).parent / 'live-data'
-        matching_files = list(live_data_dir.glob(f'lecturers_export_{args.live_date}*.csv'))
+        live_data_dir = Path(__file__).parent / "live-data"
+        matching_files = list(
+            live_data_dir.glob(f"lecturers_export_{args.live_date}*.csv")
+        )
         if matching_files:
             # Sort by modification time and pick the most recent
             matching_files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
@@ -185,13 +197,13 @@ def main():
             sys.exit(1)
 
     # Validate that live_date contains a valid date
-    date_part = args.live_date.split('-')[0:3]
+    date_part = args.live_date.split("-")[0:3]
     if len(date_part) != 3:
         print("Error: live_date must contain a valid date (YYYY-MM-DD[-N])")
         sys.exit(1)
 
     try:
-        datetime.strptime('-'.join(date_part), '%Y-%m-%d')
+        datetime.strptime("-".join(date_part), "%Y-%m-%d")
     except ValueError:
         print("Error: live_date must contain a valid date (YYYY-MM-DD[-N])")
         sys.exit(1)
@@ -212,9 +224,11 @@ def main():
 
     # Write output with date versioning
     output_date = get_current_date()
-    output_path = Path(__file__).parent / 'output' / f'lecturers_export_{output_date}.csv'
+    output_path = (
+        Path(__file__).parent / "output" / f"lecturers_export_{output_date}.csv"
+    )
     write_csv_data(merged_data, output_path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
